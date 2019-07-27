@@ -6,7 +6,7 @@ BIN_DIS=dis
 ROM=test/PONG2
 
 all:
-	$(CC) $(CFLAGS) $(LDFLAGS) emul.c -o $(BIN)
+	$(CC) $(CFLAGS) emul.c -o $(BIN) $(LDFLAGS)
 
 test: all
 	./$(BIN) $(ROM)
