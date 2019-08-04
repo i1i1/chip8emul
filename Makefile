@@ -1,6 +1,6 @@
 CC=gcc
 CFLAGS=-Wall -O3
-LDFLAGS=-lSDL2
+LDFLAGS=-lSDL2 -lm
 BIN=emul
 BIN_DIS=dis
 ROM=test/PONG2

@@ -139,10 +139,10 @@ timers_callback(void)
 {
 	if (reg.DT > 0)
 		reg.DT--;
-	if (reg.ST > 0) {
-		helper_beep();
+	if (reg.ST > 0)
 		reg.ST--;
-	}
+
+	helper_beep(reg.ST);
 }
 
 void mainloop();
@@ -160,10 +160,12 @@ main(int argc, char *argv[])
 	fclose(fp);
 	fontinit();
 	helper_initgfx(SURW, SURH);
+	helper_beep_init();
 	helper_add_timer(MS_IN_S/TIMER_FREQ, timers_callback);
 
 	mainloop();
 
+	helper_beep_deinit();
 	helper_deinitgfx();
 
 	return 0;
