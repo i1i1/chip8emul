@@ -15,6 +15,42 @@ SDL_AudioDeviceID dev;
 uint8_t beep_playing = 0;
 
 
+static void audio_callback(void *userdata, Uint8 *buffer, int len)
+{
+	(void)userdata;
+	const double F = 2 * M_PI * 500 / 48000;
+
+	SDL_memset(buffer, 0, len);
+	uint8_t *stream = (uint8_t*)buffer;
+
+	for (int i = 0; i < len; i++){
+		stream[i] = 25 * (sin(F * i) > 0.25 ? 1 : 0);
+	}
+}
+
+static inline void helper_beep_init(void)
+{
+	if (SDL_Init(SDL_INIT_AUDIO) != 0) {
+		SDL_Log("Unable to initialize SDL: %s", SDL_GetError());
+		exit(-1);
+	}
+
+	SDL_zero(want);
+
+	want.freq = 48000;
+	want.format = AUDIO_U8;
+	want.channels = 1;
+	want.samples = 4096;
+	want.callback = audio_callback;
+
+	dev = SDL_OpenAudioDevice(NULL, 0, &want, &have, SDL_AUDIO_ALLOW_FORMAT_CHANGE);
+
+	if (dev == 0) {
+		SDL_Log("Failed to open audio: %s", SDL_GetError());
+		exit(-1);
+	}
+}
+
 static inline void helper_initgfx(int width, int height)
 {
 	SDL_Init(SDL_INIT_VIDEO);
@@ -22,6 +58,12 @@ static inline void helper_initgfx(int width, int height)
 	SDL_CreateWindowAndRenderer(width, height, 0, &window, &renderer);
 
 	SDL_RenderPresent(renderer);
+	helper_beep_init();
+}
+
+static inline void helper_beep_deinit(void)
+{
+	SDL_CloseAudioDevice(dev);
 }
 
 static inline void helper_deinitgfx()
@@ -29,6 +71,7 @@ static inline void helper_deinitgfx()
 	SDL_DestroyRenderer(renderer);
 	SDL_DestroyWindow(window);
 	SDL_Quit();
+	helper_beep_deinit();
 }
 
 static inline void helper_set_draw_color(int r, int g, int b, int a)
@@ -105,49 +148,6 @@ static inline void helper_add_timer(uint32_t ms, void (*callback)(void))
 static inline void helper_remove_timer(void)
 {
 	SDL_RemoveTimer(timer);
-}
-
-
-
-static void audio_callback(void *userdata, Uint8 *buffer, int len)
-{
-	const double F = 2 * M_PI * 500 / 48000;
-
-	SDL_memset(buffer, 0, len);
-	uint8_t *stream = (uint8_t*)buffer;
-
-	for (int i = 0; i < len; i++){
-		stream[i] = 25 * (sin(F * i) > 0.25 ? 1 : 0);
-	}
-}
-
-static inline void helper_beep_init(void)
-{
-	if (SDL_Init(SDL_INIT_AUDIO) != 0) {
-		SDL_Log("Unable to initialize SDL: %s", SDL_GetError());
-		exit(-1);
-	}
-
-	SDL_zero(want);
-
-	want.freq = 48000;
-	want.format = AUDIO_U8;
-	want.channels = 1;
-	want.samples = 4096;
-	want.callback = audio_callback;
-
-	dev = SDL_OpenAudioDevice(NULL, 0, &want, &have, SDL_AUDIO_ALLOW_FORMAT_CHANGE);
-
-	if (dev == 0) {
-		SDL_Log("Failed to open audio: %s", SDL_GetError());
-		exit(-1);
-	}
-
-}
-
-static inline void helper_beep_deinit(void)
-{
-	SDL_CloseAudioDevice(dev);
 }
 
 static inline void helper_beep(uint8_t enable)

@@ -160,13 +160,11 @@ main(int argc, char *argv[])
 	fclose(fp);
 	fontinit();
 	helper_initgfx(SURW, SURH);
-	helper_beep_init();
 	helper_add_timer(MS_IN_S/TIMER_FREQ, timers_callback);
 
 	mainloop();
 
 	helper_beep_deinit();
-	helper_deinitgfx();
 
 	return 0;
 }
@@ -405,13 +403,10 @@ mainloop()
 	reg.PC = 0x200;
 	key = 0x10;
 
-	for (;;) {
+	while (!helper_is_user_exit()) {
 		const int num_insts = 16;
 
 		time = helper_time();
-
-		if (helper_is_user_exit())
-			return;
 
 		for (int i = 0; i < num_insts; i++)
 			iter();
