@@ -107,17 +107,19 @@ static inline void helper_remove_timer(void)
 	SDL_RemoveTimer(timer);
 }
 
-
-
 static void audio_callback(void *userdata, Uint8 *buffer, int len)
 {
-	const double F = 2 * M_PI * 500 / 48000;
+	const double F = 250;
+	const long period = 48000 / F;
+
+	static long passed = 0;
 
 	SDL_memset(buffer, 0, len);
 	uint8_t *stream = (uint8_t*)buffer;
 
 	for (int i = 0; i < len; i++){
-		stream[i] = 25 * (sin(F * i) > 0.25 ? 1 : 0);
+		passed = (passed + 1) % period;
+		stream[i] = 50 * (passed >= (period / 2) ? 0 : 1);
 	}
 }
 
